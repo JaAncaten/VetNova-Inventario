@@ -46,4 +46,11 @@ public class InventarioController {
 
         return "Inventario no encontrado";
     }
+
+    @PutMapping("/producto/{productoId}/descontar/{cantidad}")
+    public Inventario descontarStock(@PathVariable Long productoId,
+                                  @PathVariable Integer cantidad) {
+             return inventarioService.descontarStock(productoId, cantidad);
+}
+
 }

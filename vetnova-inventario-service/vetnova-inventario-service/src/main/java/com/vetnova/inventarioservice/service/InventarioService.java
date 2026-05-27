@@ -46,6 +46,35 @@ public class InventarioService {
         return null;
     }
 
+    public Inventario descontarStock(Long productoId, Integer cantidad) {
+    Optional<Inventario> inventarioExistente = inventarioRepository.findByProductoId(productoId);
+
+    if (inventarioExistente.isPresent()) {
+        Inventario inventario = inventarioExistente.get();
+
+        Integer stockActual = inventario.getStockActual();
+
+        if (stockActual == null || stockActual < cantidad) {
+            return null;
+        }
+
+        Integer nuevoStock = stockActual - cantidad;
+        inventario.setStockActual(nuevoStock);
+
+        if (nuevoStock == 0) {
+            inventario.setEstado("SIN_STOCK");
+        } else if (nuevoStock <= inventario.getStockMinimo()) {
+            inventario.setEstado("BAJO_STOCK");
+        } else {
+            inventario.setEstado("DISPONIBLE");
+        }
+
+                        return inventarioRepository.save(inventario);
+    }
+
+        return null;
+}
+
     public boolean eliminarInventario(Long id) {
         if (inventarioRepository.existsById(id)) {
             inventarioRepository.deleteById(id);
