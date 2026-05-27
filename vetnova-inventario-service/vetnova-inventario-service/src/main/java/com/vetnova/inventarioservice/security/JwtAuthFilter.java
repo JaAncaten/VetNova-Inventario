@@ -37,8 +37,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             Claims claims = jwtService.validarToken(token);
 
-            request.setAttribute("correo", claims.getSubject());
-            request.setAttribute("rol", claims.get("rol"));
+            String correo = claims.getSubject();
+            String rol = claims.get("rol", String.class);
+
+            request.setAttribute("correo", correo);
+            request.setAttribute("rol", rol);
+
+            if (!tienePermisoInventario(rol)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Acceso denegado. Solo ADMIN o BODEGA pueden acceder a inventario");
+                return;
+            }
 
             filterChain.doFilter(request, response);
 
@@ -46,5 +55,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token invalido o expirado");
         }
+    }
+
+    private boolean tienePermisoInventario(String rol) {
+        return "ADMIN".equals(rol) || "BODEGA".equals(rol);
     }
 }
